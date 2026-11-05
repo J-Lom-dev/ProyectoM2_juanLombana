@@ -1,36 +1,38 @@
 import pool from "../db/config.js";
+import { badRequest, notFound } from "../utils/errors.js";
 
-export const getAllPosts = async (req, res) => {
+export const getAllPosts = async (req, res, next) => {
   try {
     const posts = await pool.query("SELECT * FROM posts ORDER BY id");
     res.status(200).json(posts.rows);
   } catch (error) {
     console.error("Error obteniendo publicaciones:", error);
-    res.status(500).json({ error: "Error obteniendo publicaciones" });
+    return next(internalError("Error obteniendo publicaciones"));
   }
 }; 
 
-export const getpostsById = async (req, res) => {
+export const getpostsById = async (req, res, next) => {
   try {
     const result = await pool.query("SELECT * FROM posts WHERE id = $1", [req.params.id]);;
 
     if (result.rows.length === 0) {
-      return res.status(404).json({ error: "publicación no encontrada" });
+      return next(notFound("publicación no encontrada"));
     }
 
     res.status(200).json(result.rows[0]);
   } catch (error) {
     console.error("Error obteniendo la publicación:", error);
-    res.status(500).json({ error: "Error obteniendo la publicación" });
+
+    return next(internalError("Error obteniendo la publicación"));
   }
 }; 
 
-export const createPosts = async (req, res) => {
+export const createPosts = async (req, res, next) => {
   try {
     const { title, content, author_id, published} = req.body;
 
     if (!title || !content || !author_id) {
-      return res.status(400).json({ error: "titulo, contenido y autor_id son requeridos" });
+      return next(badRequest("titulo, contenido y autor_id son requeridos"))
     }
 
     const result = await pool.query(
@@ -43,11 +45,11 @@ export const createPosts = async (req, res) => {
   } catch (error) {
     console.error("Error creando la publicaciones:", error);
 
-    res.status(500).json({ error: "Error creando las publicaciones" });
+    return next(internalError("Error creando las publicaciones"));
   }
 };
 
-export const updatePosts = async (req, res) => {
+export const updatePosts = async (req, res, next) => {
   try {
     const { title, content, author_id, published } = req.body;
 
@@ -63,18 +65,17 @@ export const updatePosts = async (req, res) => {
     );
   
     if (result.rows.length === 0) {
-      return res.status(404).json({ error: "posts no encontrado" });
+      return next(notFound("posts no encontrado"));
     }
 
     res.json(result.rows[0]);
   } catch (error) {
     console.error("Error actualizando posts:", error);
-
-    res.status(500).json({ error: "Error actualizando posts" });
+    return next(internalError("Error actualizando posts"));
   }
 };
 
-export const deletePosts = async (req, res) => {
+export const deletePosts = async (req, res, next) => {
     try {
         const { id } = req.params;
 
@@ -84,7 +85,7 @@ export const deletePosts = async (req, res) => {
         );
 
         if (result.rows.length === 0) {
-            return res.status(404).json({ error: "publicación no encontrado" });
+            return next(notFound("publicación no encontrado"));
         }
 
         res.status(200).json({ 
@@ -94,11 +95,11 @@ export const deletePosts = async (req, res) => {
 
     } catch (error) {
         console.error("Error eliminando el posts:", error);
-        res.status(500).json({ error: "Error eliminando posts" });
+        return next(internalError("Error eliminando posts"));
     }
 };
 
-export const getPostsByAuthorId = async (req, res) => {
+export const getPostsByAuthorId = async (req, res, next) => {
     try {
         const { author_id } = req.params;
 
@@ -113,12 +114,12 @@ export const getPostsByAuthorId = async (req, res) => {
         const result = await pool.query(query, [author_id]);
 
         if (result.rows.length === 0) {
-            return res.status(404).json({ error: "No se encontraron publicaciones para este autor o el autor no existe" });
+            return next(notFound("No se encontraron publicaciones para este autor o el autor no existe"));
         }
 
         res.status(200).json(result.rows);
     } catch (error) {
         console.error("Error obteniendo posts del autor:", error);
-        res.status(500).json({ error: "Error obteniendo las publicaciones del autor" });
+        return next(internalError("Error obteniendo las publicaciones del autor"));
     }
 };

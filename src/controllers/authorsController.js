@@ -1,36 +1,37 @@
 import pool from "../db/config.js";
+import { badRequest, conflict, internalError, notFound } from "../utils/errors.js";
 
-export const getAllAuthors = async (req, res) => {
+export const getAllAuthors = async (req, res, next) => {
   try {
     const authors = await pool.query("SELECT * FROM authors ORDER BY id");
     res.status(200).json(authors.rows);
   } catch (error) {
     console.error("Error obteniendo autores:", error);
-    res.status(500).json({ error: "Error obteniendo autores" });
+    return next(internalError("Error obteniendo autores"));
   }
 }; 
 
-export const getAuthorById = async (req, res) => {
+export const getAuthorById = async (req, res, next) => {
   try {
     const result = await pool.query("SELECT * FROM authors WHERE id = $1", [req.params.id]);;
 
     if (result.rows.length === 0) {
-      return res.status(404).json({ error: "Autor no encontrado" });
+      return next(notFound("Autor no encontrado"));
     }
 
     res.status(200).json(result.rows[0]);
   } catch (error) {
     console.error("Error obteniendo autor:", error);
-    res.status(500).json({ error: "Error obteniendo autor" });
+    return next(internalError("Error obteniendo autor"));
   }
 }; 
 
-export const createAuthor = async (req, res) => {
+export const createAuthor = async (req, res, next) => {
   try {
     const { name, email, bio } = req.body;
 
     if (!name || !email) {
-      return res.status(400).json({ error: "Nombre y email son requeridos" });
+      return next(badRequest("Nombre y email son requeridos" ));
     }
 
     const result = await pool.query(
@@ -43,14 +44,14 @@ export const createAuthor = async (req, res) => {
     console.error("Error creando autor:", error);
 
     if (error.code == "23505") {
-      return res.status(409).json({ error: "El email ya está registrado" });
+      return next(conflict("El email ya está registrado" ));
     }
 
-    res.status(500).json({ error: "Error creando autor" });
+    return next(internalError("Error creando autor"));
   }
 };
 
-export const updateAuthor = async (req, res) => {
+export const updateAuthor = async (req, res, next) => {
   try {
     const { name, email, bio } = req.body;
 
@@ -65,7 +66,7 @@ export const updateAuthor = async (req, res) => {
     );
 
     if (result.rows.length === 0) {
-      return res.status(404).json({ error: "Autor no encontrado" });
+      return next(notFound("Autor no encontrado"));
     }
 
     res.json(result.rows[0]);
@@ -73,14 +74,14 @@ export const updateAuthor = async (req, res) => {
     console.error("Error actualizando autor:", error);
 
     if (error.code == "23505") {
-      return res.status(409).json({ error: "El email ya está registrado" });
+      return next(conflict("El email ya está registrado"));
     }
 
-    res.status(500).json({ error: "Error actualizando autor" });
+     return next(internalError("Error actualizando autor"));
   }
 };
 
-export const deleteAuthor = async (req, res) => {
+export const deleteAuthor = async (req, res, next) => {
     try {
         const { id } = req.params;
 
@@ -90,7 +91,7 @@ export const deleteAuthor = async (req, res) => {
         );
 
         if (result.rows.length === 0) {
-            return res.status(404).json({ error: "Autor no encontrado" });
+            return next(notFound("Autor no encontrado"));
         }
 
         res.status(200).json({ 
@@ -100,6 +101,6 @@ export const deleteAuthor = async (req, res) => {
 
     } catch (error) {
         console.error("Error eliminando autor:", error);
-        res.status(500).json({ error: "Error eliminando autor" });
+        return next(internalError("Error eliminando autor"));
     }
 };
