@@ -1,13 +1,14 @@
+import "dotenv/config"
 import express from "express";
 import router from "./routes/indexRouter.js";
 
 const app = express();
-const PORT = 3000;
+const PORT = process.env.PORT || 3000;
 
 // Middleware
 app.use(express.json());
-
-app.use(router);
+ 
+app.use(router); 
 
 app.get("/health", (req, res, next) => {
   res.status(200).json({
@@ -22,4 +23,4 @@ app.use((err, req, res, next) => {
 
 app.listen(PORT, () => {
   console.log(`Servidor Express en http://localhost:${PORT}`);
-});
+}); 
