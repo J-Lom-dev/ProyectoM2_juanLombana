@@ -4,12 +4,19 @@ import app from "../src/app.js";
 import pool from "../src/db/config.js";
 
 beforeEach(async () => {
-  await pool.query("TRUNCATE posts RESTART IDENTITY CASCADE");
-  await pool.query(`
-    INSERT INTO posts (title, content, author_id, published) VALUES
-    ('Introducción a Node.js', 'Node.js es un runtime de JavaScript...', 1, true),
-    ('PostgreSQL vs MySQL', 'Ambas bases de datos tienen ventajas...', 2, true);
-  `);
+    await pool.query("TRUNCATE posts, authors RESTART IDENTITY CASCADE");
+    
+    await pool.query(`
+        INSERT INTO authors (id, name, email) VALUES 
+        (1, 'Autor Uno', 'autor1@correo.com'),
+        (2, 'Autor Dos', 'autor2@correo.com');
+    `);
+
+    await pool.query(`
+        INSERT INTO posts (title, content, author_id, published) VALUES
+        ('Introducción a Node.js', 'Node.js es un runtime de JavaScript...', 1, true),
+        ('Express y Base de Datos', 'Aprende a conectar PostgreSQL...', 2, true);
+    `);
 });
 
 describe("GET /posts", () => {

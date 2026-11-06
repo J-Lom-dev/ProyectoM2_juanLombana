@@ -2,7 +2,8 @@
 
 **Sitio web:** 
 
-[]
+[https://proyectom2-juanlombana.onrender.com/authors]
+[https://proyectom2-juanlombana.onrender.com/posts]
 ## 📖 Descripción
 
 Esta aplicación es una API REST desarrollada en Node.js y Express, conectada a una base de datos en PostgreSQL, diseñada para gestionar usuarios y publicaciones (modelo tipo JSONPlaceholder) en el marco de los proyectos de Soy Henry.
